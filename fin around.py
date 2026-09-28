@@ -29,7 +29,7 @@ current_step = 0
 base_image = None         
 
 is_rendering = False
-slider_start_vals = {}    # Tracks slider value when first grabbed by mouse
+slider_start_vals = {}    
 
 
 def generate_checkerboard():
@@ -200,7 +200,7 @@ def draw_handles():
             
             panel.create_rectangle(ix1, iy1, ix2, cy1, fill='black', stipple='gray50', outline='', tags="overlay")
             panel.create_rectangle(ix1, cy2, ix2, iy2, fill='black', stipple='gray50', outline='', tags="overlay")
-            panel.create_rectangle(ix1, cy1, cx1, cy2, fill='black', stipple='gray50', outline='', tags="overlay")
+            panel.create_rectangle(ix1, iy1, cx1, cy2, fill='black', stipple='gray50', outline='', tags="overlay")
             panel.create_rectangle(cx2, cy1, ix2, cy2, fill='black', stipple='gray50', outline='', tags="overlay")
     else:
         color = 'cyan'
@@ -227,8 +227,7 @@ def activate_crop():
     if not hasattr(panel, 'image'): return
     dw, dh = clean_disp_img.width, clean_disp_img.height
     pad_x, pad_y = dw * 0.1, dh * 0.1
-    bbox = [img_canvas_x + pad_x, img_canvas_y + pad_y, 
-            img_canvas_x + dw - pad_x, img_canvas_y + dh - pad_y]
+    bbox = [img_canvas_x, img_canvas_y, img_canvas_x + dw, img_canvas_y + dh]
     panel.config(cursor="crosshair")
     displayimage(outputImage)
 
@@ -405,27 +404,22 @@ def redo():
 # --- FILTERS & SLIDERS ---
 
 def on_slider_move(val):
-    """Live preview update while dragging slider."""
     if is_rendering: return
     apply_sliders_to_image()
 
 def on_slider_press(slider_type, slider_widget):
-    """Stores initial slider value when mouse grabs the handle."""
     if is_rendering: return
     slider_start_vals[slider_type] = slider_widget.get()
 
 def on_slider_release(slider_type, slider_widget):
-    """Logs history action only when mouse is released after dragging."""
     if is_rendering: return
     start_val = slider_start_vals.get(slider_type, 1.0)
     end_val = slider_widget.get()
     
-    # Only create a history action if the value actually changed during the drag
     if start_val != end_val:
         add_action('slider', value=end_val, slider_type=slider_type)
 
 def apply_sliders_to_image():
-    """Sequentially applies current slider values to the base rendered image."""
     global outputImage
     temp_img = img.copy() 
     
@@ -497,6 +491,7 @@ screen_height = mains.winfo_screenheight()
 mains.geometry(f"{screen_width}x{screen_height}")
 mains.title(f"{space}Image Editor")
 mains.configure(bg='#323946')
+mains.attributes("-fullscreen", True)
 
 try:
     initial_img = Image.open("logo.png")
